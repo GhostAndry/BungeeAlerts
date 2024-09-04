@@ -14,15 +14,14 @@
 
 server_name: "server"
 
-alert_message: "&8[&5&lS&8] &7(%server%) &d%player% &7failed &d%check% &8(&d%vl%&8)"
+alert_message: "&8[&5&lS&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
 
 aclogs:
     enabled: true
-    message: "&8[&5&lS&8] &7(%time%) &d%player% &7failed &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
+    message: "&8[&5&lS&8] &7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
     not-found: "&8[&5&lS&8] &cNessun log trovato per %player%."
     mysql:
         host: "localhost"
         port: 3306
         database: "dragonland"
         username: "dragonland"
-        password: "dragonland"
