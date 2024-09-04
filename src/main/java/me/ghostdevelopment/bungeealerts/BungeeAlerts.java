@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import me.ghostdevelopment.bungeealerts.commands.CommandACLogs;
 import me.ghostdevelopment.bungeealerts.commands.CommandBAlerts;
 import me.ghostdevelopment.bungeealerts.events.onGrimFlagEvent;
+import me.ghostdevelopment.bungeealerts.events.onJoinEvent;
 import me.ghostdevelopment.bungeealerts.events.onMatrixFlagEvent;
 import me.ghostdevelopment.bungeealerts.events.onVulcanFlagEvent;
 import me.ghostdevelopment.bungeealerts.listeners.BungeeMessage;
@@ -54,6 +55,7 @@ public class BungeeAlerts extends JavaPlugin {
 
   void registerEvents() {
     PluginManager pm = Bukkit.getPluginManager();
+    pm.registerEvents((Listener) new onJoinEvent(), (Plugin) this);
     pm.registerEvents((Listener) new onVulcanFlagEvent(this), (Plugin) this);
     pm.registerEvents((Listener) new onMatrixFlagEvent(this), (Plugin) this);
     pm.registerEvents((Listener) new onGrimFlagEvent(this), (Plugin) this);

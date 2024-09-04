@@ -4,6 +4,7 @@
 /home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandACLogs.java
 /home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/MatrixCheck.java
 /home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/utils/DB.java
+/home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onJoinEvent.java
 /home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onMatrixFlagEvent.java
 /home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onGrimFlagEvent.java
 /home/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java
