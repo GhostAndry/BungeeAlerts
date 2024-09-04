@@ -1,0 +1,18 @@
+name: BungeeAlerts
+version: '1.0'
+main: me.ghostdevelopment.bungeealerts.BungeeAlerts
+load: STARTUP
+api-version: 1.21
+author: GhostAndry
+
+commands:
+  bungeealerts:
+    description: 'Command to see alerts from any server'
+    aliases: 
+      - balerts
+  aclogs:
+    description: 'See every log'
+
+permissions:
+  bungeealerts.use:
+    description: 'Permission to use /bungeealerts command'
