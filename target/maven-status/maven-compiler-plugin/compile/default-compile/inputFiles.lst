@@ -1,0 +1,9 @@
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onMatrixFlagEvent.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/utils/DB.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/redis/RedisManager.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandACLogs.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandBAlerts.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onGrimFlagEvent.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onVulcanFlagEvent.java
+/mnt/Disk2/Coding/Java/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onJoinEvent.java
