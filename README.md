@@ -1,8 +1,6 @@
 
 # BungeeAlerts - Cross-Server Anti-Cheat Alert System
 
-![Banner](https://i.imgur.com/ABCD123.png) *Replace with actual banner image URL*
-
 ## Features
 - **Multi-AC Compatibility**: Works with Vulcan, Matrix, GrimAC, and Karhu
 - **Redis Integration**: Real-time alerts across your BungeeCord network
