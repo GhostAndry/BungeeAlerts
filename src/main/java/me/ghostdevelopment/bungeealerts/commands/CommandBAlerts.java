@@ -8,23 +8,25 @@ import org.bukkit.entity.Player;
 
 import me.ghostdevelopment.bungeealerts.BungeeAlerts;
 
+import java.util.UUID;
+
 public class CommandBAlerts implements CommandExecutor {
-    
-    
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player))
-            return false;
-        Player player = (Player) sender;
-        if (!player.hasPermission("bungeealerts.use"))
-            return false;
-        if (BungeeAlerts.getStaffer().contains(player)) {
-            BungeeAlerts.getStaffer().remove(player);
+        if (!(sender instanceof Player player)) return false;
+        if (!player.hasPermission("bungeealerts.use")) return false;
+
+        UUID uuid = player.getUniqueId();
+        boolean current = BungeeAlerts.getStafferMap().getOrDefault(uuid, false);
+
+        BungeeAlerts.getStafferMap().put(uuid, !current);
+        if (current) {
             player.sendMessage(color("&cAlerts disabled."));
         } else {
-            BungeeAlerts.getStaffer().add(player);
             player.sendMessage(color("&aAlerts enabled."));
         }
+
         return true;
     }
 

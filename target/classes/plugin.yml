@@ -12,6 +12,12 @@ commands:
       - balerts
   aclogs:
     description: 'See every log'
+  testalert:
+    description: 'Test alerts from any server'
+    aliases:
+      - talerts
+    usage: '/testalerts <player> <check> <vl>'
+    permission: bungeealerts.use
 
 permissions:
   bungeealerts.use:

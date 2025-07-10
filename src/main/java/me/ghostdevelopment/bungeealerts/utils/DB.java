@@ -1,15 +1,8 @@
 package me.ghostdevelopment.bungeealerts.utils;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import me.ghostdevelopment.bungeealerts.BungeeAlerts;
 import org.bukkit.Bukkit;
 
@@ -33,11 +26,21 @@ public class DB {
         try (Connection connection = DriverManager.getConnection(dbUrl, USER, PASS);
              Statement statement = connection.createStatement()) {
 
-            String sql = "CREATE TABLE IF NOT EXISTS aclogs (id INT AUTO_INCREMENT PRIMARY KEY, time VARCHAR(23), playername VARCHAR(16), check_value VARCHAR(255), vl INT, server VARCHAR(255))";
+            String sql = "CREATE TABLE IF NOT EXISTS aclogs (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "time VARCHAR(23) NOT NULL, " +
+                    "playername VARCHAR(16) NOT NULL, " +
+                    "check_value VARCHAR(255) NOT NULL, " +
+                    "vl INT NOT NULL, " +
+                    "server VARCHAR(255) NOT NULL, " +
+                    "description TEXT, " +          // Added description field
+                    "check_info TEXT)";             // Hover information
+
             statement.executeUpdate(sql);
             Bukkit.getLogger().info("✅ Table 'aclogs' created successfully.");
 
         } catch (Exception e) {
+            Bukkit.getLogger().severe("❌ Failed to create database table: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -46,79 +49,62 @@ public class DB {
         return "jdbc:mysql://" + DB_IP + ":" + DB_PORT + "/" + DB_NAME;
     }
 
-    public static void add(String playerName, String check, int vl, String server) {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            if(!BungeeAlerts.getInstance().getConfig().getBoolean("aclogs.enabled")) return;
+    public static void add(Check check) {
+        if (!BungeeAlerts.getInstance().getConfig().getBoolean("aclogs.enabled")) return;
 
-            connection = DriverManager.getConnection(getDBUrl(), USER, PASS);
-            String sql = "INSERT INTO aclogs (time, playername, check_value, vl, server) VALUES (?, ?, ?, ?, ?)";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-            preparedStatement.setString(2, playerName);
-            preparedStatement.setString(3, check);
-            preparedStatement.setInt(4, vl);
-            preparedStatement.setString(5, server);
-            preparedStatement.executeUpdate();
+        try (Connection connection = DriverManager.getConnection(getDBUrl(), USER, PASS);
+             PreparedStatement ps = connection.prepareStatement(
+                     "INSERT INTO aclogs (time, playername, check_value, vl, server, description, check_info) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setString(1, check.getTime());
+            ps.setString(2, check.getPlayerName());
+            ps.setString(3, check.getCheck());
+            ps.setInt(4, check.getVl());
+            ps.setString(5, check.getServer());
+            ps.setString(6, check.getDescription());
+            ps.setString(7, check.getInfo());
+            ps.executeUpdate();
         } catch (SQLException se) {
+            Bukkit.getLogger().severe("❌ Failed to add AC log: " + se.getMessage());
             se.printStackTrace();
-        } finally {
-            try {
-                if (preparedStatement != null)
-                    preparedStatement.close();
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
         }
     }
 
-    public static List<String> get(String playerName) {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<String> messages = new ArrayList<String>();
-        try {
-            connection = DriverManager.getConnection(getDBUrl(), USER, PASS);
-            String sql = "SELECT * FROM aclogs WHERE playername = ? ORDER BY id DESC";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, playerName);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                String message = formatMessage(resultSet);
-                messages.add(message);
+    public static List<Check> getChecks(String playerName) {
+        List<Check> checks = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(getDBUrl(), USER, PASS);
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT * FROM aclogs WHERE playername = ? ORDER BY id DESC")) {
+
+            ps.setString(1, playerName);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    checks.add(new Check(
+                            rs.getString("time"),
+                            rs.getString("playername"),
+                            rs.getString("check_value"),
+                            rs.getInt("vl"),
+                            rs.getString("server"),
+                            rs.getString("description"),  // Load description
+                            rs.getString("check_info")    // Load hover info
+                    ));
+                }
             }
         } catch (SQLException se) {
+            Bukkit.getLogger().severe("❌ Failed to get AC logs: " + se.getMessage());
             se.printStackTrace();
-        } finally {
-            try {
-                if (resultSet != null)
-                    resultSet.close();
-                if (preparedStatement != null)
-                    preparedStatement.close();
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
         }
-        return messages;
+        return checks;
     }
 
-    private static String formatMessage(ResultSet resultSet) throws SQLException {
-        String time = resultSet.getString("time");
-        String playerName = resultSet.getString("playername");
-        String check = resultSet.getString("check_value");
-        int vl = resultSet.getInt("vl");
-        String server = resultSet.getString("server");
-        String message = BungeeAlerts.getInstance().getConfig().getString("aclogs.message")
-                .replaceAll("%time%", time)
-                .replaceAll("%player%", playerName)
-                .replaceAll("%check%", check)
-                .replaceAll("%vl%", String.valueOf(vl))
-                .replaceAll("%server%", server);
-        return message;
+    public static List<Check> getChecksPage(String playerName, int page, int pageSize) {
+        List<Check> all = getChecks(playerName); // già ordinati DESC
+        int fromIndex = (page - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, all.size());
+
+        if (fromIndex >= all.size()) return new ArrayList<>();
+        return all.subList(fromIndex, toIndex);
     }
+
 }

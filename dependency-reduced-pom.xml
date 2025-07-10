@@ -65,25 +65,32 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>nigga</groupId>
-      <artifactId>nigga</artifactId>
-      <version>0.1</version>
+      <groupId>ac.grim</groupId>
+      <artifactId>grimac</artifactId>
+      <version>latest</version>
       <scope>system</scope>
       <systemPath>${project.basedir}/lib/Grim.jar</systemPath>
     </dependency>
     <dependency>
-      <groupId>nigga1</groupId>
-      <artifactId>nigga1</artifactId>
-      <version>0.1</version>
+      <groupId>me.frep</groupId>
+      <artifactId>Vulcan</artifactId>
+      <version>latest</version>
       <scope>system</scope>
       <systemPath>${project.basedir}/lib/Vulcan.jar</systemPath>
     </dependency>
     <dependency>
-      <groupId>nigga2</groupId>
-      <artifactId>nigga2</artifactId>
-      <version>0.1</version>
+      <groupId>me.rerere</groupId>
+      <artifactId>Matrix</artifactId>
+      <version>latest</version>
       <scope>system</scope>
       <systemPath>${project.basedir}/lib/Matrix.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>me.liwk</groupId>
+      <artifactId>Karhu</artifactId>
+      <version>latest</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/KarhuAPI.jar</systemPath>
     </dependency>
   </dependencies>
   <properties>

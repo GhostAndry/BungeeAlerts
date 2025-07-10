@@ -1,6 +1,7 @@
 package me.ghostdevelopment.bungeealerts.events;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,23 +14,17 @@ public class onJoinEvent implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        Bukkit.getScheduler().runTaskLater(BungeeAlerts.getInstance(), ()-> setAlerts(event), 10);
+        Player player = event.getPlayer();
+        if (player.hasPermission("bungeealerts.use") || player.isOp()) {
+            BungeeAlerts.getStafferMap().putIfAbsent(player.getUniqueId(), true);
+        }
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        Bukkit.getScheduler().runTaskLater(BungeeAlerts.getInstance(), ()-> setAlerts(event), 10);
+        Player player = event.getPlayer();
+        BungeeAlerts.getStafferMap().remove(player.getUniqueId());
     }
-    
-    private void setAlerts(PlayerQuitEvent event) {
-        if(event.getPlayer().isOp()||event.getPlayer().hasPermission("bungeealerts.use")) {
-            BungeeAlerts.getStaffer().remove(event.getPlayer());
-        }
-    }
-    private void setAlerts(PlayerJoinEvent event) {
-        if(event.getPlayer().isOp()||event.getPlayer().hasPermission("bungeealerts.use")) {
-            BungeeAlerts.getStaffer().add(event.getPlayer());
-        }
-    }
-    
+
+
 }

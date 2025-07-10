@@ -1,10 +1,13 @@
 me/ghostdevelopment/bungeealerts/utils/DB.class
-me/ghostdevelopment/bungeealerts/events/onMatrixFlagEvent.class
 me/ghostdevelopment/bungeealerts/commands/CommandACLogs.class
 me/ghostdevelopment/bungeealerts/events/onGrimFlagEvent.class
+me/ghostdevelopment/bungeealerts/utils/Check.class
+me/ghostdevelopment/bungeealerts/events/onKarhuFlagEvent.class
+me/ghostdevelopment/bungeealerts/commands/CommandBAlerts.class
+me/ghostdevelopment/bungeealerts/events/onJoinEvent.class
+me/ghostdevelopment/bungeealerts/events/onMatrixFlagEvent.class
 me/ghostdevelopment/bungeealerts/redis/RedisManager.class
 me/ghostdevelopment/bungeealerts/events/onVulcanFlagEvent.class
-me/ghostdevelopment/bungeealerts/commands/CommandBAlerts.class
 me/ghostdevelopment/bungeealerts/BungeeAlerts.class
 me/ghostdevelopment/bungeealerts/redis/RedisManager$1.class
-me/ghostdevelopment/bungeealerts/events/onJoinEvent.class
+me/ghostdevelopment/bungeealerts/commands/CommandTestalert.class
