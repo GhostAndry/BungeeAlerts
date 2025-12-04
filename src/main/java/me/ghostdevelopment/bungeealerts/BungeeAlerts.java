@@ -21,9 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class BungeeAlerts extends JavaPlugin {
     
     
-    @Getter
     private static BungeeAlerts instance;
-    @Getter
     private static RedisManager redisManager;
 
     private static final HashMap<UUID, Boolean> staffer = new HashMap<>();
@@ -36,6 +34,14 @@ public class BungeeAlerts extends JavaPlugin {
         return Bukkit.getOnlinePlayers().stream()
                 .filter(p -> staffer.getOrDefault(p.getUniqueId(), false))
                 .collect(Collectors.toList());
+    }
+
+    public static Object getInstance() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public static RedisManager getRedisManager() {
+        return redisManager;
     }
 
     @Override

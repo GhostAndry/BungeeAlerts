@@ -17,18 +17,34 @@
 #  Version: 1.0.0
 #
 
-# Server identifier shown in alerts and logs
-# Used in DB.add() and flag event handlers
+# ============================================================
+#  SERVER IDENTIFICATION
+# ============================================================
+# Name used to identify this server instance across alerts,
+# logs and cross-server communication. Important in networks
+# where multiple servers share the same database or Redis
+# channels, ensuring staff can distinguish where each alert
+# originated from.
 server_name: "server"
 
-# Alert message template broadcasted when cheat is detected
-# Format variables:
-#   %server% - Server name from config
-#   %player% - Player who triggered the alert
-#   %check%  - Anti-cheat check name
-#   %vl%     - Violation level
-# Used in on[Matrix|Vulcan|Grim]FlagEvent handlers
+
+# ============================================================
+#  REAL-TIME ALERT MESSAGES
+# ============================================================
+# Template for the alert message sent when a cheat flag is
+# detected by supported anti-cheat systems (Vulcan, Matrix,
+# GrimAC, Karhu). Variables:
+# MAKE SURE TO ENABLE enable-api ON VULCAN ANTICHEAT' CONFIG
+#   %server%  - Name of this server
+#   %player%  - Player who triggered the check
+#   %check%   - Anti-cheat check name
+#   %vl%      - Violation level for that event
+# This message is sent to staff with the correct permissions.
 alert_message: "&8[&5&lAntiCheat&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
+
+# Hover message attached to the alert (when using JSON/chat components).
+# Provides deeper context for staff, including check description,
+# timestamp and detailed debug information if provided by the AC.
 hover_message: |
     &6Player: &e%player%
     &6Check: &e%check%
@@ -39,31 +55,41 @@ hover_message: |
     &6Details:
     &7%check_info%
 
-# Redis configuration for cross-server messaging
-# Used in RedisManager class
+
+# ============================================================
+#  REDIS (CROSS-SERVER ALERT SYNC)
+# ============================================================
+# Allows alerts and logs to be broadcast between servers in
+# a proxy network (BungeeCord, Waterfall, Velocity). Alerts
+# triggered on one backend can be instantly seen on others.
 redis:
-    # Redis server hostname/IP
+    # Redis server host (often localhost when running locally).
     host: localhost
-    # Redis server port
+
+    # Default Redis port (6379). Only change if your setup differs.
     port: 6379
-    # Pub/Sub channel name for alerts
+
+    # Pub/Sub channel used for sending and receiving alert messages.
+    # Must be identical across all servers in the network.
     channel: "bungeealerts"
 
-# Anti-Cheat logging system configuration
-# Used throughout DB.java and CommandACLogs
+
+# ============================================================
+#  AC LOGGING SYSTEM
+# ============================================================
+# Full logging module responsible for storing violations in
+# SQL/MongoDB/SQLite and providing paginated log views to staff.
 aclogs:
-    # Master switch for logging system
-    # Checked in DB.add() before logging
+
+    # Enables or disables the entire logging system. When disabled,
+    # no violations are written to the database, but alerts still work.
     enabled: true
-    # Format for individual log entries
-    # Format variables:
-    #   %time%    - Timestamp of violation
-    #   %player%  - Player name
-    #   %check%   - Check name
-    #   %vl%      - Violation level
-    #   %server%  - Server name
-    # Used in DB.formatMessage()
+
+    # Template used when writing violation logs into the database.
+    # Contains contextual information and mirrors real-time alert formatting.
     message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
+
+    # Hover-text shown when staff navigate logs interactively.
     hover_message: |
         &6Player: &e%player%
         &6Check: &e%check%
@@ -73,19 +99,66 @@ aclogs:
         &6Time: &e%time%
         &6Details:
         &7%check_info%
-    # Header for paginated log results
-    # Used in CommandACLogs
+
+    # Header used when showing paginated AC logs (e.g., /aclogs <player>).
+    # Displays current page and total pages.
     paginated: "&dAC Logs for %player% (Page %page% of %total_pages%)."
-    # Message shown when more pages are available
-    # Used in CommandACLogs pagination
+
+    # Notice shown when more log pages are available.
     next-page: "Next page... (> Page %page% of %total_pages%)"
-    # Error message when no logs found for player
-    # Used in CommandACLogs
+
+    # Message displayed when no logs exist for a given player.
     not-found: "&cNo logs found for %player%."
 
-    mysql:
+    # Determines which storage engine the plugin will use.
+    # Supported: mysql, mongodb, sqlite.
+    storage-method: "mysql"
+
+
+    # ============================================================
+    #  SQL DATABASE CONFIG (MySQL / PostgreSQL)
+    # ============================================================
+    sql:
+        # Database hostname. Localhost for local instances.
         host: "localhost"
+
+        # SQL port:
+        #   MySQL  -> 3306
+        #   Postgres -> 5432
         port: 3306
+
+        # Name of the target SQL database where logs are stored.
         database: "aclogs"
+
+        # Credentials used for authentication.
         username: "root"
         password: "password"
+
+        # Enables SSL encryption when connecting to SQL.
+        # Set to true only if your database explicitly requires SSL.
+        use-ssl: false
+
+
+    # ============================================================
+    #  MONGODB CONFIGURATION
+    # ============================================================
+    # Alternative storage backend using MongoDB document collections.
+    mongodb:
+        # Connection URI containing credentials and authentication database.
+        uri: "mongodb://root:password@localhost:27017/admin"
+
+        # Name of the MongoDB database.
+        database: "bungeealerts"
+
+        # Collection inside the database used for storing logs.
+        collection: "aclogs"
+
+
+    # ============================================================
+    #  SQLITE CONFIGURATION (LOCAL FILE)
+    # ============================================================
+    # Lightweight storage option that saves all logs into a local
+    # .db file, requiring no external database server.
+    sqlite:
+        # Local SQLite database file path.
+        file: "aclogs.db"

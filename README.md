@@ -1,54 +1,36 @@
-
-# BungeeAlerts - Cross-Server Anti-Cheat Alert System
+# BungeeAlerts – Cross-Server Anti-Cheat Alert System
 
 ## Features
-- **Multi-AC Compatibility**: Works with Vulcan, Matrix, GrimAC, and Karhu
-- **Redis Integration**: Real-time alerts across your BungeeCord network
-- **Centralized Logging**: Stores alerts in MySQL database
-- **Staff Management**: Toggle alerts with `/bungeealerts` command
-- **Log Review**: View player histories with `/aclogs` command
-- **Customizable Messages**: Fully configurable alert formats
+
+* **Multi-Anti-Cheat Support**: Works with Vulcan, Matrix, GrimAC, and Karhu
+* **Redis Integration**: Real-time cross-server alert broadcasting
+* **Centralized Logging**: Store violations using MySQL, MongoDB, or SQLite
+* **Staff Management**: Toggle alerts via `/bungeealerts`
+* **Log Review Panel**: View complete player violation history with `/aclogs`
+* **Fully Customizable Messages**: Alerts, hover text, pagination, database settings
+
+---
 
 ## Installation
-1. Place the plugin in all backend servers' `plugins/` folders
-2. Configure `config.yml` (see Configuration section)
-3. Install required dependencies:
-   - Redis server
-   - MySQL database
-4. Restart your servers
+
+1. Place the plugin inside each backend server’s `plugins/` folder
+2. Configure `config.yml`
+3. Ensure required services are running:
+
+   * Redis server
+   * MySQL / MariaDB / PostgresSQL / MongoDB (optional)
+4. Restart all servers in your network
+
+---
 
 ## Configuration (`config.yml`)
-```yaml
-#
-#     ██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ███████╗███████╗
-#     ██╔══██╗██║   ██║████╗  ██║██╔════╝ ██╔════╝██╔════╝
-#     ██████╔╝██║   ██║██╔██╗ ██║██║  ███╗█████╗  █████╗
-#     ██╔══██╗██║   ██║██║╚██╗██║██║   ██║██╔══╝  ██╔══╝
-#     ██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝███████╗███████╗
-#     ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝
-#
-#       █████╗ ██╗     ███████╗██████╗ ████████╗███████╗
-#      ██╔══██╗██║     ██╔════╝██╔══██╗╚══██╔══╝██╔════╝
-#      ███████║██║     █████╗  ██████╔╝   ██║   ███████╗
-#      ██╔══██║██║     ██╔══╝  ██╔══██╗   ██║   ╚════██║
-#      ██║  ██║███████╗███████╗██║  ██║   ██║   ███████║
-#      ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
-#
-#  By GhostAndry Compatible with Vulcan, Matrix, GrimAC and Karhu
-#  Version: 1.0.0
-#
 
-# Server identifier shown in alerts and logs
-# Used in DB.add() and flag event handlers
+Below is a simplified preview.
+A full version with detailed English comments is included inside the plugin.
+
+```yaml
 server_name: "server"
 
-# Alert message template broadcasted when cheat is detected
-# Format variables:
-#   %server% - Server name from config
-#   %player% - Player who triggered the alert
-#   %check%  - Anti-cheat check name
-#   %vl%     - Violation level
-# Used in on[Matrix|Vulcan|Grim]FlagEvent handlers
 alert_message: "&8[&5&lAntiCheat&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
 hover_message: |
     &6Player: &e%player%
@@ -60,31 +42,17 @@ hover_message: |
     &6Details:
     &7%check_info%
 
-# Redis configuration for cross-server messaging
-# Used in RedisManager class
 redis:
-    # Redis server hostname/IP
     host: localhost
-    # Redis server port
     port: 6379
-    # Pub/Sub channel name for alerts
     channel: "bungeealerts"
 
-# Anti-Cheat logging system configuration
-# Used throughout DB.java and CommandACLogs
 aclogs:
-    # Master switch for logging system
-    # Checked in DB.add() before logging
+
     enabled: true
-    # Format for individual log entries
-    # Format variables:
-    #   %time%    - Timestamp of violation
-    #   %player%  - Player name
-    #   %check%   - Check name
-    #   %vl%      - Violation level
-    #   %server%  - Server name
-    # Used in DB.formatMessage()
+
     message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
+
     hover_message: |
         &6Player: &e%player%
         &6Check: &e%check%
@@ -94,42 +62,63 @@ aclogs:
         &6Time: &e%time%
         &6Details:
         &7%check_info%
-    # Header for paginated log results
-    # Used in CommandACLogs
+
     paginated: "&dAC Logs for %player% (Page %page% of %total_pages%)."
-    # Message shown when more pages are available
-    # Used in CommandACLogs pagination
     next-page: "Next page... (> Page %page% of %total_pages%)"
-    # Error message when no logs found for player
-    # Used in CommandACLogs
     not-found: "&cNo logs found for %player%."
 
-    mysql:
+    storage-method: "mysql"
+
+    sql:
         host: "localhost"
         port: 3306
         database: "aclogs"
         username: "root"
         password: "password"
+        use-ssl: false
+
+    mongodb:
+        uri: "mongodb://root:password@localhost:27017/admin"
+        database: "bungeealerts"
+        collection: "aclogs"
+
+    sqlite:
+        file: "aclogs.db"
 ```
 
+---
+
 ## Commands
-| Command | Permission | Description |
-|---------|------------|-------------|
-| `/bungeealerts` | `bungeealerts.use` | Toggle AC alerts |
-| `/balerts` | `bungeealerts.use` | Alias for above |
-| `/aclogs <player>` | `bungeealerts.use` | View player's AC history |
+
+| Command            | Permission         | Description                      |
+| ------------------ | ------------------ | -------------------------------- |
+| `/bungeealerts`    | `bungeealerts.use` | Toggle anti-cheat alerts         |
+| `/balerts`         | `bungeealerts.use` | Command alias                    |
+| `/testalert`       | `bungeealerts.test`| Send a test alert to staff       |
+| `/aclogs <player>` | `bungeealerts.use` | View stored AC logs for a player |
+
+---
 
 ## Requirements
-- Java 21+
-- Redis 7.2.0+
-- MySQL 10.5+
-- BungeeCord/Waterfall network (optional)
-- Spigot/Paper 1.8.X+ servers
 
-## Support
-Compatible with:
-- ✅ Vulcan
-- ✅ Matrix
-- ✅ GrimAC
-- ✅ Karhu
-- ❗ Polar (TODO)
+* Java 21+
+* Redis 7.2.0+
+* MySQL/MariaDB (optional)
+* MongoDB (optional)
+* PostgreSQL (optional)
+* SQLite (local file)
+* Any Spigot/Paper server 1.8.X+
+* Optional: BungeeCord / Velocity / Forks / network
+
+---
+
+## Supported Anti-Cheats
+
+* Vulcan
+* Matrix
+* GrimAC
+* Karhu
+* Polar (planned)
+
+
+## FOR VULCAN: PLEASE ENABLE `enable-api` IN VULCAN'S CONFIG TO ALLOW ALERTS TO BE SENT PROPERLY.

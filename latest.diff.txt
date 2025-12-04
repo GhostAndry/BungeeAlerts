@@ -1,0 +1,819 @@
+diff --git a/README.md b/README.md
+index d85cb55..5061c80 100644
+--- a/README.md
++++ b/README.md
+@@ -1,54 +1,36 @@
+-
+-# BungeeAlerts - Cross-Server Anti-Cheat Alert System
++# BungeeAlerts – Cross-Server Anti-Cheat Alert System
+ 
+ ## Features
+-- **Multi-AC Compatibility**: Works with Vulcan, Matrix, GrimAC, and Karhu
+-- **Redis Integration**: Real-time alerts across your BungeeCord network
+-- **Centralized Logging**: Stores alerts in MySQL database
+-- **Staff Management**: Toggle alerts with `/bungeealerts` command
+-- **Log Review**: View player histories with `/aclogs` command
+-- **Customizable Messages**: Fully configurable alert formats
++
++* **Multi-Anti-Cheat Support**: Works with Vulcan, Matrix, GrimAC, and Karhu
++* **Redis Integration**: Real-time cross-server alert broadcasting
++* **Centralized Logging**: Store violations using MySQL, MongoDB, or SQLite
++* **Staff Management**: Toggle alerts via `/bungeealerts`
++* **Log Review Panel**: View complete player violation history with `/aclogs`
++* **Fully Customizable Messages**: Alerts, hover text, pagination, database settings
++
++---
+ 
+ ## Installation
+-1. Place the plugin in all backend servers' `plugins/` folders
+-2. Configure `config.yml` (see Configuration section)
+-3. Install required dependencies:
+-   - Redis server
+-   - MySQL database
+-4. Restart your servers
++
++1. Place the plugin inside each backend server’s `plugins/` folder
++2. Configure `config.yml`
++3. Ensure required services are running:
++
++   * Redis server
++   * MySQL / MariaDB / PostgresSQL / MongoDB (optional)
++4. Restart all servers in your network
++
++---
+ 
+ ## Configuration (`config.yml`)
++
++Below is a simplified preview.
++A full version with detailed English comments is included inside the plugin.
++
+ ```yaml
+-#
+-#     ██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ███████╗███████╗
+-#     ██╔══██╗██║   ██║████╗  ██║██╔════╝ ██╔════╝██╔════╝
+-#     ██████╔╝██║   ██║██╔██╗ ██║██║  ███╗█████╗  █████╗
+-#     ██╔══██╗██║   ██║██║╚██╗██║██║   ██║██╔══╝  ██╔══╝
+-#     ██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝███████╗███████╗
+-#     ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝
+-#
+-#       █████╗ ██╗     ███████╗██████╗ ████████╗███████╗
+-#      ██╔══██╗██║     ██╔════╝██╔══██╗╚══██╔══╝██╔════╝
+-#      ███████║██║     █████╗  ██████╔╝   ██║   ███████╗
+-#      ██╔══██║██║     ██╔══╝  ██╔══██╗   ██║   ╚════██║
+-#      ██║  ██║███████╗███████╗██║  ██║   ██║   ███████║
+-#      ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
+-#
+-#  By GhostAndry Compatible with Vulcan, Matrix, GrimAC and Karhu
+-#  Version: 1.0.0
+-#
+-
+-# Server identifier shown in alerts and logs
+-# Used in DB.add() and flag event handlers
+ server_name: "server"
+ 
+-# Alert message template broadcasted when cheat is detected
+-# Format variables:
+-#   %server% - Server name from config
+-#   %player% - Player who triggered the alert
+-#   %check%  - Anti-cheat check name
+-#   %vl%     - Violation level
+-# Used in on[Matrix|Vulcan|Grim]FlagEvent handlers
+ alert_message: "&8[&5&lAntiCheat&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
+ hover_message: |
+     &6Player: &e%player%
+@@ -60,31 +42,17 @@ hover_message: |
+     &6Details:
+     &7%check_info%
+ 
+-# Redis configuration for cross-server messaging
+-# Used in RedisManager class
+ redis:
+-    # Redis server hostname/IP
+     host: localhost
+-    # Redis server port
+     port: 6379
+-    # Pub/Sub channel name for alerts
+     channel: "bungeealerts"
+ 
+-# Anti-Cheat logging system configuration
+-# Used throughout DB.java and CommandACLogs
+ aclogs:
+-    # Master switch for logging system
+-    # Checked in DB.add() before logging
++
+     enabled: true
+-    # Format for individual log entries
+-    # Format variables:
+-    #   %time%    - Timestamp of violation
+-    #   %player%  - Player name
+-    #   %check%   - Check name
+-    #   %vl%      - Violation level
+-    #   %server%  - Server name
+-    # Used in DB.formatMessage()
++
+     message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
++
+     hover_message: |
+         &6Player: &e%player%
+         &6Check: &e%check%
+@@ -94,42 +62,63 @@ aclogs:
+         &6Time: &e%time%
+         &6Details:
+         &7%check_info%
+-    # Header for paginated log results
+-    # Used in CommandACLogs
++
+     paginated: "&dAC Logs for %player% (Page %page% of %total_pages%)."
+-    # Message shown when more pages are available
+-    # Used in CommandACLogs pagination
+     next-page: "Next page... (> Page %page% of %total_pages%)"
+-    # Error message when no logs found for player
+-    # Used in CommandACLogs
+     not-found: "&cNo logs found for %player%."
+ 
+-    mysql:
++    storage-method: "mysql"
++
++    sql:
+         host: "localhost"
+         port: 3306
+         database: "aclogs"
+         username: "root"
+         password: "password"
++        use-ssl: false
++
++    mongodb:
++        uri: "mongodb://root:password@localhost:27017/admin"
++        database: "bungeealerts"
++        collection: "aclogs"
++
++    sqlite:
++        file: "aclogs.db"
+ ```
+ 
++---
++
+ ## Commands
+-| Command | Permission | Description |
+-|---------|------------|-------------|
+-| `/bungeealerts` | `bungeealerts.use` | Toggle AC alerts |
+-| `/balerts` | `bungeealerts.use` | Alias for above |
+-| `/aclogs <player>` | `bungeealerts.use` | View player's AC history |
++
++| Command            | Permission         | Description                      |
++| ------------------ | ------------------ | -------------------------------- |
++| `/bungeealerts`    | `bungeealerts.use` | Toggle anti-cheat alerts         |
++| `/balerts`         | `bungeealerts.use` | Command alias                    |
++| `/testalert`       | `bungeealerts.test`| Send a test alert to staff       |
++| `/aclogs <player>` | `bungeealerts.use` | View stored AC logs for a player |
++
++---
+ 
+ ## Requirements
+-- Java 21+
+-- Redis 7.2.0+
+-- MySQL 10.5+
+-- BungeeCord/Waterfall network (optional)
+-- Spigot/Paper 1.8.X+ servers
+-
+-## Support
+-Compatible with:
+-- ✅ Vulcan
+-- ✅ Matrix
+-- ✅ GrimAC
+-- ✅ Karhu
+-- ❗ Polar (TODO)
+\ No newline at end of file
++
++* Java 21+
++* Redis 7.2.0+
++* MySQL/MariaDB (optional)
++* MongoDB (optional)
++* PostgreSQL (optional)
++* SQLite (local file)
++* Any Spigot/Paper server 1.8.X+
++* Optional: BungeeCord / Velocity / Forks / network
++
++---
++
++## Supported Anti-Cheats
++
++* Vulcan
++* Matrix
++* GrimAC
++* Karhu
++* Polar (planned)
++
++
++## FOR VULCAN: PLEASE ENABLE `enable-api` IN VULCAN'S CONFIG TO ALLOW ALERTS TO BE SENT PROPERLY.
+diff --git a/pom.xml b/pom.xml
+index bd7b472..9eea5bf 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project xmlns="http://maven.apache.org/POM/4.0.0"
+-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+     <modelVersion>4.0.0</modelVersion>
+ 
+     <groupId>me.ghostdevelopment</groupId>
+@@ -39,6 +39,34 @@
+                         <goals>
+                             <goal>shade</goal>
+                         </goals>
++                        <configuration>
++                            <!-- Evita di creare il file dependency-reduced-pom.xml che sporca la cartella -->
++                            <createDependencyReducedPom>false</createDependencyReducedPom>
++                            
++                            <!-- RILOCAZIONE: Sposta le librerie nel tuo namespace -->
++                            <relocations>
++                                <relocation>
++                                    <pattern>com.mongodb</pattern>
++                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.mongodb</shadedPattern>
++                                </relocation>
++                                <relocation>
++                                    <pattern>org.bson</pattern>
++                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.bson</shadedPattern>
++                                </relocation>
++                            </relocations>
++
++                            <!-- FILTRI: Rimuove le firme digitali per evitare SecurityException -->
++                            <filters>
++                                <filter>
++                                    <artifact>*:*</artifact>
++                                    <excludes>
++                                        <exclude>META-INF/*.SF</exclude>
++                                        <exclude>META-INF/*.DSA</exclude>
++                                        <exclude>META-INF/*.RSA</exclude>
++                                    </excludes>
++                                </filter>
++                            </filters>
++                        </configuration>
+                     </execution>
+                 </executions>
+             </plugin>
+@@ -81,6 +109,13 @@
+             <artifactId>mysql-connector-java</artifactId>
+             <version>8.0.33</version>
+         </dependency>
++        <!-- MongoDB Driver Sync -->
++        <dependency>
++            <groupId>org.mongodb</groupId>
++            <artifactId>mongodb-driver-sync</artifactId>
++            <version>5.2.1</version> <!-- Puoi usare anche la 4.11.1 se usi Java 8 -->
++            <scope>compile</scope>
++        </dependency>
+         <dependency>
+             <groupId>redis.clients</groupId>
+             <artifactId>jedis</artifactId>
+diff --git a/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java b/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java
+index 58441b9..da1cc1c 100644
+--- a/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java
++++ b/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java
+@@ -21,9 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
+ public class BungeeAlerts extends JavaPlugin {
+     
+     
+-    @Getter
+     private static BungeeAlerts instance;
+-    @Getter
+     private static RedisManager redisManager;
+ 
+     private static final HashMap<UUID, Boolean> staffer = new HashMap<>();
+@@ -38,6 +36,14 @@ public class BungeeAlerts extends JavaPlugin {
+                 .collect(Collectors.toList());
+     }
+ 
++    public static Object getInstance() {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++
++    public static RedisManager getRedisManager() {
++        return redisManager;
++    }
++
+     @Override
+     public void onEnable() {
+         instance = this;
+diff --git a/src/main/java/me/ghostdevelopment/bungeealerts/utils/DB.java b/src/main/java/me/ghostdevelopment/bungeealerts/utils/DB.java
+index bfa475d..ec983d9 100644
+--- a/src/main/java/me/ghostdevelopment/bungeealerts/utils/DB.java
++++ b/src/main/java/me/ghostdevelopment/bungeealerts/utils/DB.java
+@@ -1,110 +1,66 @@
+ package me.ghostdevelopment.bungeealerts.utils;
+ 
+-import java.sql.*;
+-import java.util.ArrayList;
+-import java.util.List;
+ import me.ghostdevelopment.bungeealerts.BungeeAlerts;
++import me.ghostdevelopment.bungeealerts.utils.database.*;
+ import org.bukkit.Bukkit;
++import java.util.ArrayList;
++import java.util.List;
+ 
+ public class DB {
+-    private static String DB_IP;
+-    private static String DB_PORT;
+-    private static String DB_NAME;
+-    private static String USER;
+-    private static String PASS;
+-
+-    public static void init() {
+-        DB_IP = BungeeAlerts.getInstance().getConfig().getString("aclogs.mysql.host");
+-        DB_PORT = String.valueOf(BungeeAlerts.getInstance().getConfig().getInt("aclogs.mysql.port"));
+-        DB_NAME = BungeeAlerts.getInstance().getConfig().getString("aclogs.mysql.database");
+-        USER = BungeeAlerts.getInstance().getConfig().getString("aclogs.mysql.username");
+-        PASS = BungeeAlerts.getInstance().getConfig().getString("aclogs.mysql.password");
+-
+-        String dbUrl = "jdbc:mysql://" + DB_IP + ":" + DB_PORT + "/" + DB_NAME + "?useSSL=false&serverTimezone=UTC";
+-        Bukkit.getLogger().info("📡 Connecting to MySQL at: " + dbUrl);
+-
+-        try (Connection connection = DriverManager.getConnection(dbUrl, USER, PASS);
+-             Statement statement = connection.createStatement()) {
+ 
+-            String sql = "CREATE TABLE IF NOT EXISTS aclogs (" +
+-                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+-                    "time VARCHAR(23) NOT NULL, " +
+-                    "playername VARCHAR(16) NOT NULL, " +
+-                    "check_value VARCHAR(255) NOT NULL, " +
+-                    "vl INT NOT NULL, " +
+-                    "server VARCHAR(255) NOT NULL, " +
+-                    "description TEXT, " +          // Added description field
+-                    "check_info TEXT)";             // Hover information
++    private static DatabaseHandler handler;
+ 
+-            statement.executeUpdate(sql);
+-            Bukkit.getLogger().info("✅ Table 'aclogs' created successfully.");
+-
+-        } catch (Exception e) {
+-            Bukkit.getLogger().severe("❌ Failed to create database table: " + e.getMessage());
+-            e.printStackTrace();
++    public static void init() {
++        String method = BungeeAlerts.getInstance().getConfig().getString("aclogs.storage-method", "mysql").toLowerCase();
++
++        switch (method) {
++            case "postgresql":
++                handler = new PostgreSQLHandler();
++                break;
++            case "mongodb":
++                handler = new MongoDBHandler();
++                break;
++            case "sqlite":
++                // Se vuoi implementare SQLite, crea una classe SQLiteHandler simile a MySQLHandler 
++                // ma con url "jdbc:sqlite:plugins/BungeeAlerts/aclogs.db"
++                // handler = new SQLiteHandler(); 
++                Bukkit.getLogger().warning("SQLite implementation pending. Falling back to MySQL logic (may fail if not configured).");
++                handler = new MySQLHandler(); 
++                break;
++            case "mysql":
++            default:
++                handler = new MySQLHandler();
++                break;
+         }
+-    }
+ 
+-    private static String getDBUrl() {
+-        return "jdbc:mysql://" + DB_IP + ":" + DB_PORT + "/" + DB_NAME;
++        Bukkit.getLogger().info("📡 Initializing database handler: " + method);
++        handler.init();
+     }
+ 
+     public static void add(Check check) {
+         if (!BungeeAlerts.getInstance().getConfig().getBoolean("aclogs.enabled")) return;
+-
+-        try (Connection connection = DriverManager.getConnection(getDBUrl(), USER, PASS);
+-             PreparedStatement ps = connection.prepareStatement(
+-                     "INSERT INTO aclogs (time, playername, check_value, vl, server, description, check_info) " +
+-                             "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+-            ps.setString(1, check.getTime());
+-            ps.setString(2, check.getPlayerName());
+-            ps.setString(3, check.getCheck());
+-            ps.setInt(4, check.getVl());
+-            ps.setString(5, check.getServer());
+-            ps.setString(6, check.getDescription());
+-            ps.setString(7, check.getInfo());
+-            ps.executeUpdate();
+-        } catch (SQLException se) {
+-            Bukkit.getLogger().severe("❌ Failed to add AC log: " + se.getMessage());
+-            se.printStackTrace();
++        if (handler != null) {
++            handler.addLog(check);
+         }
+     }
+ 
+     public static List<Check> getChecks(String playerName) {
+-        List<Check> checks = new ArrayList<>();
+-
+-        try (Connection connection = DriverManager.getConnection(getDBUrl(), USER, PASS);
+-             PreparedStatement ps = connection.prepareStatement(
+-                     "SELECT * FROM aclogs WHERE playername = ? ORDER BY id DESC")) {
+-
+-            ps.setString(1, playerName);
+-            try (ResultSet rs = ps.executeQuery()) {
+-                while (rs.next()) {
+-                    checks.add(new Check(
+-                            rs.getString("time"),
+-                            rs.getString("playername"),
+-                            rs.getString("check_value"),
+-                            rs.getInt("vl"),
+-                            rs.getString("server"),
+-                            rs.getString("description"),  // Load description
+-                            rs.getString("check_info")    // Load hover info
+-                    ));
+-                }
+-            }
+-        } catch (SQLException se) {
+-            Bukkit.getLogger().severe("❌ Failed to get AC logs: " + se.getMessage());
+-            se.printStackTrace();
++        if (handler != null) {
++            return handler.getLogs(playerName);
+         }
+-        return checks;
++        return new ArrayList<>();
+     }
+ 
+     public static List<Check> getChecksPage(String playerName, int page, int pageSize) {
+-        List<Check> all = getChecks(playerName); // già ordinati DESC
++        List<Check> all = getChecks(playerName);
+         int fromIndex = (page - 1) * pageSize;
+         int toIndex = Math.min(fromIndex + pageSize, all.size());
+ 
+         if (fromIndex >= all.size()) return new ArrayList<>();
+         return all.subList(fromIndex, toIndex);
+     }
+-
++    
++    public static void close() {
++        if (handler != null) handler.close();
++    }
+ }
+\ No newline at end of file
+diff --git a/src/main/resources/config.yml b/src/main/resources/config.yml
+index f7e500e..d98b7c4 100644
+--- a/src/main/resources/config.yml
++++ b/src/main/resources/config.yml
+@@ -17,18 +17,34 @@
+ #  Version: 1.0.0
+ #
+ 
+-# Server identifier shown in alerts and logs
+-# Used in DB.add() and flag event handlers
++# ============================================================
++#  SERVER IDENTIFICATION
++# ============================================================
++# Name used to identify this server instance across alerts,
++# logs and cross-server communication. Important in networks
++# where multiple servers share the same database or Redis
++# channels, ensuring staff can distinguish where each alert
++# originated from.
+ server_name: "server"
+ 
+-# Alert message template broadcasted when cheat is detected
+-# Format variables:
+-#   %server% - Server name from config
+-#   %player% - Player who triggered the alert
+-#   %check%  - Anti-cheat check name
+-#   %vl%     - Violation level
+-# Used in on[Matrix|Vulcan|Grim]FlagEvent handlers
++
++# ============================================================
++#  REAL-TIME ALERT MESSAGES
++# ============================================================
++# Template for the alert message sent when a cheat flag is
++# detected by supported anti-cheat systems (Vulcan, Matrix,
++# GrimAC, Karhu). Variables:
++# MAKE SURE TO ENABLE enable-api ON VULCAN ANTICHEAT' CONFIG
++#   %server%  - Name of this server
++#   %player%  - Player who triggered the check
++#   %check%   - Anti-cheat check name
++#   %vl%      - Violation level for that event
++# This message is sent to staff with the correct permissions.
+ alert_message: "&8[&5&lAntiCheat&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
++
++# Hover message attached to the alert (when using JSON/chat components).
++# Provides deeper context for staff, including check description,
++# timestamp and detailed debug information if provided by the AC.
+ hover_message: |
+     &6Player: &e%player%
+     &6Check: &e%check%
+@@ -39,31 +55,41 @@ hover_message: |
+     &6Details:
+     &7%check_info%
+ 
+-# Redis configuration for cross-server messaging
+-# Used in RedisManager class
++
++# ============================================================
++#  REDIS (CROSS-SERVER ALERT SYNC)
++# ============================================================
++# Allows alerts and logs to be broadcast between servers in
++# a proxy network (BungeeCord, Waterfall, Velocity). Alerts
++# triggered on one backend can be instantly seen on others.
+ redis:
+-    # Redis server hostname/IP
++    # Redis server host (often localhost when running locally).
+     host: localhost
+-    # Redis server port
++
++    # Default Redis port (6379). Only change if your setup differs.
+     port: 6379
+-    # Pub/Sub channel name for alerts
++
++    # Pub/Sub channel used for sending and receiving alert messages.
++    # Must be identical across all servers in the network.
+     channel: "bungeealerts"
+ 
+-# Anti-Cheat logging system configuration
+-# Used throughout DB.java and CommandACLogs
++
++# ============================================================
++#  AC LOGGING SYSTEM
++# ============================================================
++# Full logging module responsible for storing violations in
++# SQL/MongoDB/SQLite and providing paginated log views to staff.
+ aclogs:
+-    # Master switch for logging system
+-    # Checked in DB.add() before logging
++
++    # Enables or disables the entire logging system. When disabled,
++    # no violations are written to the database, but alerts still work.
+     enabled: true
+-    # Format for individual log entries
+-    # Format variables:
+-    #   %time%    - Timestamp of violation
+-    #   %player%  - Player name
+-    #   %check%   - Check name
+-    #   %vl%      - Violation level
+-    #   %server%  - Server name
+-    # Used in DB.formatMessage()
++
++    # Template used when writing violation logs into the database.
++    # Contains contextual information and mirrors real-time alert formatting.
+     message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
++
++    # Hover-text shown when staff navigate logs interactively.
+     hover_message: |
+         &6Player: &e%player%
+         &6Check: &e%check%
+@@ -73,19 +99,66 @@ aclogs:
+         &6Time: &e%time%
+         &6Details:
+         &7%check_info%
+-    # Header for paginated log results
+-    # Used in CommandACLogs
++
++    # Header used when showing paginated AC logs (e.g., /aclogs <player>).
++    # Displays current page and total pages.
+     paginated: "&dAC Logs for %player% (Page %page% of %total_pages%)."
+-    # Message shown when more pages are available
+-    # Used in CommandACLogs pagination
++
++    # Notice shown when more log pages are available.
+     next-page: "Next page... (> Page %page% of %total_pages%)"
+-    # Error message when no logs found for player
+-    # Used in CommandACLogs
++
++    # Message displayed when no logs exist for a given player.
+     not-found: "&cNo logs found for %player%."
+ 
+-    mysql:
++    # Determines which storage engine the plugin will use.
++    # Supported: mysql, mongodb, sqlite.
++    storage-method: "mysql"
++
++
++    # ============================================================
++    #  SQL DATABASE CONFIG (MySQL / PostgreSQL)
++    # ============================================================
++    sql:
++        # Database hostname. Localhost for local instances.
+         host: "localhost"
++
++        # SQL port:
++        #   MySQL  -> 3306
++        #   Postgres -> 5432
+         port: 3306
++
++        # Name of the target SQL database where logs are stored.
+         database: "aclogs"
++
++        # Credentials used for authentication.
+         username: "root"
+-        password: "password"
+\ No newline at end of file
++        password: "password"
++
++        # Enables SSL encryption when connecting to SQL.
++        # Set to true only if your database explicitly requires SSL.
++        use-ssl: false
++
++
++    # ============================================================
++    #  MONGODB CONFIGURATION
++    # ============================================================
++    # Alternative storage backend using MongoDB document collections.
++    mongodb:
++        # Connection URI containing credentials and authentication database.
++        uri: "mongodb://root:password@localhost:27017/admin"
++
++        # Name of the MongoDB database.
++        database: "bungeealerts"
++
++        # Collection inside the database used for storing logs.
++        collection: "aclogs"
++
++
++    # ============================================================
++    #  SQLITE CONFIGURATION (LOCAL FILE)
++    # ============================================================
++    # Lightweight storage option that saves all logs into a local
++    # .db file, requiring no external database server.
++    sqlite:
++        # Local SQLite database file path.
++        file: "aclogs.db"
+diff --git a/target/classes/config.yml b/target/classes/config.yml
+index f7e500e..d98b7c4 100644
+--- a/target/classes/config.yml
++++ b/target/classes/config.yml
+@@ -17,18 +17,34 @@
+ #  Version: 1.0.0
+ #
+ 
+-# Server identifier shown in alerts and logs
+-# Used in DB.add() and flag event handlers
++# ============================================================
++#  SERVER IDENTIFICATION
++# ============================================================
++# Name used to identify this server instance across alerts,
++# logs and cross-server communication. Important in networks
++# where multiple servers share the same database or Redis
++# channels, ensuring staff can distinguish where each alert
++# originated from.
+ server_name: "server"
+ 
+-# Alert message template broadcasted when cheat is detected
+-# Format variables:
+-#   %server% - Server name from config
+-#   %player% - Player who triggered the alert
+-#   %check%  - Anti-cheat check name
+-#   %vl%     - Violation level
+-# Used in on[Matrix|Vulcan|Grim]FlagEvent handlers
++
++# ============================================================
++#  REAL-TIME ALERT MESSAGES
++# ============================================================
++# Template for the alert message sent when a cheat flag is
++# detected by supported anti-cheat systems (Vulcan, Matrix,
++# GrimAC, Karhu). Variables:
++# MAKE SURE TO ENABLE enable-api ON VULCAN ANTICHEAT' CONFIG
++#   %server%  - Name of this server
++#   %player%  - Player who triggered the check
++#   %check%   - Anti-cheat check name
++#   %vl%      - Violation level for that event
++# This message is sent to staff with the correct permissions.
+ alert_message: "&8[&5&lAntiCheat&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
++
++# Hover message attached to the alert (when using JSON/chat components).
++# Provides deeper context for staff, including check description,
++# timestamp and detailed debug information if provided by the AC.
+ hover_message: |
+     &6Player: &e%player%
+     &6Check: &e%check%
+@@ -39,31 +55,41 @@ hover_message: |
+     &6Details:
+     &7%check_info%
+ 
+-# Redis configuration for cross-server messaging
+-# Used in RedisManager class
++
++# ============================================================
++#  REDIS (CROSS-SERVER ALERT SYNC)
++# ============================================================
++# Allows alerts and logs to be broadcast between servers in
++# a proxy network (BungeeCord, Waterfall, Velocity). Alerts
++# triggered on one backend can be instantly seen on others.
+ redis:
+-    # Redis server hostname/IP
++    # Redis server host (often localhost when running locally).
+     host: localhost
+-    # Redis server port
++
++    # Default Redis port (6379). Only change if your setup differs.
+     port: 6379
+-    # Pub/Sub channel name for alerts
++
++    # Pub/Sub channel used for sending and receiving alert messages.
++    # Must be identical across all servers in the network.
+     channel: "bungeealerts"
+ 
+-# Anti-Cheat logging system configuration
+-# Used throughout DB.java and CommandACLogs
++
++# ============================================================
++#  AC LOGGING SYSTEM
++# ============================================================
++# Full logging module responsible for storing violations in
++# SQL/MongoDB/SQLite and providing paginated log views to staff.
+ aclogs:
+-    # Master switch for logging system
+-    # Checked in DB.add() before logging
++
++    # Enables or disables the entire logging system. When disabled,
++    # no violations are written to the database, but alerts still work.
+     enabled: true
+-    # Format for individual log entries
+-    # Format variables:
+-    #   %time%    - Timestamp of violation
+-    #   %player%  - Player name
+-    #   %check%   - Check name
+-    #   %vl%      - Violation level
+-    #   %server%  - Server name
+-    # Used in DB.formatMessage()
++
++    # Template used when writing violation logs into the database.
++    # Contains contextual information and mirrors real-time alert formatting.
+     message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
++
++    # Hover-text shown when staff navigate logs interactively.
+     hover_message: |
+         &6Player: &e%player%
+         &6Check: &e%check%
+@@ -73,19 +99,66 @@ aclogs:
+         &6Time: &e%time%
+         &6Details:
+         &7%check_info%
+-    # Header for paginated log results
+-    # Used in CommandACLogs
++
++    # Header used when showing paginated AC logs (e.g., /aclogs <player>).
++    # Displays current page and total pages.
+     paginated: "&dAC Logs for %player% (Page %page% of %total_pages%)."
+-    # Message shown when more pages are available
+-    # Used in CommandACLogs pagination
++
++    # Notice shown when more log pages are available.
+     next-page: "Next page... (> Page %page% of %total_pages%)"
+-    # Error message when no logs found for player
+-    # Used in CommandACLogs
++
++    # Message displayed when no logs exist for a given player.
+     not-found: "&cNo logs found for %player%."
+ 
+-    mysql:
++    # Determines which storage engine the plugin will use.
++    # Supported: mysql, mongodb, sqlite.
++    storage-method: "mysql"
++
++
++    # ============================================================
++    #  SQL DATABASE CONFIG (MySQL / PostgreSQL)
++    # ============================================================
++    sql:
++        # Database hostname. Localhost for local instances.
+         host: "localhost"
++
++        # SQL port:
++        #   MySQL  -> 3306
++        #   Postgres -> 5432
+         port: 3306
++
++        # Name of the target SQL database where logs are stored.
+         database: "aclogs"
++
++        # Credentials used for authentication.
+         username: "root"
+-        password: "password"
+\ No newline at end of file
++        password: "password"
++
++        # Enables SSL encryption when connecting to SQL.
++        # Set to true only if your database explicitly requires SSL.
++        use-ssl: false
++
++
++    # ============================================================
++    #  MONGODB CONFIGURATION
++    # ============================================================
++    # Alternative storage backend using MongoDB document collections.
++    mongodb:
++        # Connection URI containing credentials and authentication database.
++        uri: "mongodb://root:password@localhost:27017/admin"
++
++        # Name of the MongoDB database.
++        database: "bungeealerts"
++
++        # Collection inside the database used for storing logs.
++        collection: "aclogs"
++
++
++    # ============================================================
++    #  SQLITE CONFIGURATION (LOCAL FILE)
++    # ============================================================
++    # Lightweight storage option that saves all logs into a local
++    # .db file, requiring no external database server.
++    sqlite:
++        # Local SQLite database file path.
++        file: "aclogs.db"

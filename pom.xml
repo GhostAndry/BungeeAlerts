@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.ghostdevelopment</groupId>
@@ -39,6 +39,34 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <!-- Evita di creare il file dependency-reduced-pom.xml che sporca la cartella -->
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            
+                            <!-- RILOCAZIONE: Sposta le librerie nel tuo namespace -->
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.mongodb</pattern>
+                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.mongodb</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.bson</pattern>
+                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.bson</shadedPattern>
+                                </relocation>
+                            </relocations>
+
+                            <!-- FILTRI: Rimuove le firme digitali per evitare SecurityException -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -80,6 +108,13 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
+        </dependency>
+        <!-- MongoDB Driver Sync -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>5.2.1</version> <!-- Puoi usare anche la 4.11.1 se usi Java 8 -->
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
