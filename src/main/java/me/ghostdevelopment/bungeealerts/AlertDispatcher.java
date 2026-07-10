@@ -45,10 +45,15 @@ public final class AlertDispatcher {
      * <p>
      * This is the preferred entry point — every AC listener maps its
      * vendor-specific event to an InternalFlag and calls this method.
+     * <p>
+     * Flags with VL below {@code alert-minimum-vl} are silently dropped.
      *
      * @param flag the standardized flag data
      */
     public void dispatch(InternalFlag flag) {
+        int minVl = plugin.getConfig().getInt(Settings.CFG_ALERT_MINIMUM_VL, 0);
+        if (flag.violations() < minVl) return;
+
         dispatch(flag.playerName(), flag.checkName(), flag.violations(),
                 flag.description(), flag.checkInfo());
     }

@@ -33,18 +33,26 @@ public final class CommandACLogs implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        FileConfiguration config = BungeeAlerts.getInstance().getConfig();
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString(Settings.CFG_MSG_PLAYER_ONLY,
+                            "&cThis command can only be used by players.")));
             return false;
         }
 
         if (!player.hasPermission("bungeealerts.use")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString(Settings.CFG_MSG_NO_PERMISSION,
+                            "&cYou don't have permission to use this command.")));
             return false;
         }
 
         if (args.length < 1) {
-            player.sendMessage(ChatColor.RED + "Usage: /aclogs <player> [-e|--extended] [page]");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString(Settings.CFG_MSG_ACLOGS_USAGE,
+                            "&cUsage: /aclogs <player> [-e|--extended] [page]")));
             return false;
         }
 

@@ -1,10 +1,12 @@
 package me.ghostdevelopment.bungeealerts.commands;
 
 import me.ghostdevelopment.bungeealerts.BungeeAlerts;
+import me.ghostdevelopment.bungeealerts.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
@@ -23,19 +25,23 @@ public final class CommandBAlerts implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        FileConfiguration config = BungeeAlerts.getInstance().getConfig();
+
         // Reload subcommand
         if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-            return handleReload(sender);
+            return handleReload(sender, config);
         }
 
         // Toggle alerts (player only)
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            sender.sendMessage(color(config.getString(Settings.CFG_MSG_PLAYER_ONLY,
+                    "&cThis command can only be used by players.")));
             return false;
         }
 
         if (!player.hasPermission("bungeealerts.use")) {
-            player.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            player.sendMessage(color(config.getString(Settings.CFG_MSG_NO_PERMISSION,
+                    "&cYou don't have permission to use this command.")));
             return false;
         }
 
@@ -43,25 +49,29 @@ public final class CommandBAlerts implements CommandExecutor {
         Set<UUID> staffSet = BungeeAlerts.getStaffSet();
 
         if (staffSet.remove(uuid)) {
-            player.sendMessage(color("&cAlerts disabled."));
+            player.sendMessage(color(config.getString(Settings.CFG_MSG_ALERTS_DISABLED,
+                    "&cAlerts disabled.")));
         } else {
             staffSet.add(uuid);
-            player.sendMessage(color("&aAlerts enabled."));
+            player.sendMessage(color(config.getString(Settings.CFG_MSG_ALERTS_ENABLED,
+                    "&aAlerts enabled.")));
         }
 
         return true;
     }
 
-    private boolean handleReload(CommandSender sender) {
+    private boolean handleReload(CommandSender sender, FileConfiguration config) {
         if (!sender.hasPermission("bungeealerts.reload")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to reload the config.");
+            sender.sendMessage(color(config.getString(Settings.CFG_MSG_NO_PERMISSION,
+                    "&cYou don't have permission to use this command.")));
             return false;
         }
 
         BungeeAlerts plugin = BungeeAlerts.getInstance();
         plugin.reloadConfig();
         plugin.getConfig().options().copyDefaults(true);
-        sender.sendMessage(color("&aBungeeAlerts configuration reloaded."));
+        sender.sendMessage(color(config.getString(Settings.CFG_MSG_CONFIG_RELOADED,
+                "&aBungeeAlerts configuration reloaded.")));
         return true;
     }
 

@@ -10,6 +10,7 @@ me/ghostdevelopment/bungeealerts/utils/database/DatabaseHandler.class
 me/ghostdevelopment/bungeealerts/Settings.class
 me/ghostdevelopment/bungeealerts/redis/RedisManager.class
 me/frep/vulcan/api/event/VulcanFlagEvent$Check.class
+me/ghostdevelopment/bungeealerts/UpdateChecker.class
 me/liwk/karhu/api/event/KarhuEvent.class
 me/ghostdevelopment/bungeealerts/utils/DB$AggregatedLog.class
 me/ghostdevelopment/bungeealerts/redis/RedisManager$1.class
@@ -34,4 +35,5 @@ me/ghostdevelopment/bungeealerts/utils/InternalFlag.class
 me/liwk/karhu/api/KarhuAPI$EventRegistry.class
 me/ghostdevelopment/bungeealerts/BungeeAlerts.class
 me/liwk/karhu/api/event/impl/KarhuAlertEvent$Check.class
+me/ghostdevelopment/bungeealerts/commands/CommandTabCompleter.class
 me/ghostdevelopment/bungeealerts/commands/CommandTestalert.class

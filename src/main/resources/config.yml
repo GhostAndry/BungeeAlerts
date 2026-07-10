@@ -42,6 +42,11 @@ server_name: "server"
 # This message is sent to staff with the correct permissions.
 alert_message: "&8[&5&lAntiCheat&8] &7(%server%) &d%player% &7> &d%check% &8(&d%vl%&8)"
 
+# Minimum violation level required to trigger an alert.
+# Flags with VL below this value are silently ignored.
+# Set to 0 to receive all alerts.
+alert-minimum-vl: 0
+
 # Hover message attached to the alert (when using JSON/chat components).
 # Provides deeper context for staff, including check description,
 # timestamp and detailed debug information if provided by the AC.
@@ -167,3 +172,18 @@ aclogs:
     sqlite:
         # Local SQLite database file path.
         file: "aclogs.db"
+
+
+# ============================================================
+#  MESSAGES
+# ============================================================
+# Customize all plugin messages. Supports &-color codes.
+messages:
+    player-only: "&cThis command can only be used by players."
+    no-permission: "&cYou don't have permission to use this command."
+    alerts-enabled: "&aAlerts enabled."
+    alerts-disabled: "&cAlerts disabled."
+    config-reloaded: "&aBungeeAlerts configuration reloaded."
+    test-sent: "&aTest alert sent for %player% (%check% x%vl%)!"
+    dispatcher-not-ready: "&cDispatcher not ready — plugin still starting."
+    aclogs-usage: "&cUsage: /aclogs <player> [-e|--extended] [page]"

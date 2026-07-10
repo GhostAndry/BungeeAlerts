@@ -3,12 +3,14 @@ package me.ghostdevelopment.bungeealerts;
 import lombok.Getter;
 import me.ghostdevelopment.bungeealerts.commands.CommandACLogs;
 import me.ghostdevelopment.bungeealerts.commands.CommandBAlerts;
+import me.ghostdevelopment.bungeealerts.commands.CommandTabCompleter;
 import me.ghostdevelopment.bungeealerts.commands.CommandTestalert;
 import me.ghostdevelopment.bungeealerts.events.*;
 import me.ghostdevelopment.bungeealerts.redis.RedisManager;
 import me.ghostdevelopment.bungeealerts.utils.DB;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -108,6 +110,11 @@ public final class BungeeAlerts extends JavaPlugin {
             DB.init();
         }
 
+        // Update checker (async, non-blocking)
+        UpdateChecker updateChecker = new UpdateChecker(this);
+        updateChecker.check();
+        Bukkit.getPluginManager().registerEvents(updateChecker, this);
+
         log.info("BungeeAlerts v" + getDescription().getVersion() + " enabled.");
     }
 
@@ -144,15 +151,17 @@ public final class BungeeAlerts extends JavaPlugin {
     }
 
     private void registerCommands() {
-        registerCommand("bungeealerts", new CommandBAlerts());
-        registerCommand("aclogs", new CommandACLogs());
-        registerCommand("testalert", new CommandTestalert());
+        var tabCompleter = new CommandTabCompleter();
+        registerCommand("bungeealerts", new CommandBAlerts(), tabCompleter);
+        registerCommand("aclogs", new CommandACLogs(), tabCompleter);
+        registerCommand("testalert", new CommandTestalert(), tabCompleter);
     }
 
-    private void registerCommand(String name, CommandExecutor executor) {
+    private void registerCommand(String name, CommandExecutor executor, TabCompleter tabCompleter) {
         var cmd = getCommand(name);
         if (cmd != null) {
             cmd.setExecutor(executor);
+            cmd.setTabCompleter(tabCompleter);
         } else {
             getLogger().warning("Command '" + name + "' not found in plugin.yml — skipping registration.");
         }

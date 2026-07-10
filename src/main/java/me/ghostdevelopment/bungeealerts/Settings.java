@@ -50,6 +50,19 @@ public final class Settings {
     public static final String CFG_REDIS_PASSWORD  = "redis.password";
     public static final String CFG_REDIS_CHANNEL   = "redis.channel";
 
+    // Alert filtering
+    public static final String CFG_ALERT_MINIMUM_VL  = "alert-minimum-vl";
+
+    // Command messages
+    public static final String CFG_MSG_PLAYER_ONLY      = "messages.player-only";
+    public static final String CFG_MSG_NO_PERMISSION    = "messages.no-permission";
+    public static final String CFG_MSG_ALERTS_ENABLED   = "messages.alerts-enabled";
+    public static final String CFG_MSG_ALERTS_DISABLED  = "messages.alerts-disabled";
+    public static final String CFG_MSG_CONFIG_RELOADED  = "messages.config-reloaded";
+    public static final String CFG_MSG_TEST_SENT         = "messages.test-sent";
+    public static final String CFG_MSG_DISPATCHER_NOT_READY = "messages.dispatcher-not-ready";
+    public static final String CFG_MSG_ACLOGS_USAGE     = "messages.aclogs-usage";
+
     // ACLogs
     public static final String CFG_ACLOGS_ENABLED             = "aclogs.enabled";
     public static final String CFG_ACLOGS_STORAGE             = "aclogs.storage-method";

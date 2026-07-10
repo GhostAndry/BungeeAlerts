@@ -2,10 +2,12 @@ package me.ghostdevelopment.bungeealerts.commands;
 
 import me.ghostdevelopment.bungeealerts.AlertDispatcher;
 import me.ghostdevelopment.bungeealerts.BungeeAlerts;
+import me.ghostdevelopment.bungeealerts.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 /**
@@ -22,19 +24,27 @@ public final class CommandTestalert implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        FileConfiguration config = BungeeAlerts.getInstance().getConfig();
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString(Settings.CFG_MSG_PLAYER_ONLY,
+                            "&cThis command can only be used by players.")));
             return false;
         }
 
         if (!player.hasPermission("bungeealerts.test")) {
-            player.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString(Settings.CFG_MSG_NO_PERMISSION,
+                            "&cYou don't have permission to use this command.")));
             return false;
         }
 
         AlertDispatcher dispatcher = BungeeAlerts.getDispatcher();
         if (dispatcher == null) {
-            player.sendMessage(ChatColor.RED + "Dispatcher not ready — plugin still starting.");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString(Settings.CFG_MSG_DISPATCHER_NOT_READY,
+                            "&cDispatcher not ready — plugin still starting.")));
             return false;
         }
 
@@ -53,8 +63,13 @@ public final class CommandTestalert implements CommandExecutor {
                         + "VL: " + vl
         );
 
-        player.sendMessage(ChatColor.GREEN + "Test alert sent for " + targetPlayer
-                + " (" + checkName + " x" + vl + ")!");
+        String successMsg = config.getString(Settings.CFG_MSG_TEST_SENT,
+                "&aTest alert sent for %player% (%check% x%vl%)!");
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                successMsg
+                        .replace("%player%", targetPlayer)
+                        .replace("%check%", checkName)
+                        .replace("%vl%", String.valueOf(vl))));
         return true;
     }
 

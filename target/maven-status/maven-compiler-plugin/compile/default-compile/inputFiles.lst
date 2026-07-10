@@ -1,8 +1,10 @@
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/AlertDispatcher.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/BungeeAlerts.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/Settings.java
+/Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/UpdateChecker.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandACLogs.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandBAlerts.java
+/Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandTabCompleter.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/commands/CommandTestalert.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onGrimFlagEvent.java
 /Users/andrea/IdeaProjects/BungeeAlerts/src/main/java/me/ghostdevelopment/bungeealerts/events/onJoinEvent.java
