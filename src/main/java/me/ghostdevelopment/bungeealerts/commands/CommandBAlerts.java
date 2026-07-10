@@ -1,32 +1,67 @@
 package me.ghostdevelopment.bungeealerts.commands;
 
+import me.ghostdevelopment.bungeealerts.BungeeAlerts;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import me.ghostdevelopment.bungeealerts.BungeeAlerts;
-
+import java.util.Set;
 import java.util.UUID;
 
-public class CommandBAlerts implements CommandExecutor {
+/**
+ * Toggles anti-cheat alerts on/off or reloads configuration.
+ * <p>
+ * Usage:
+ * <ul>
+ *   <li>{@code /bungeealerts} — toggle alerts on/off</li>
+ *   <li>{@code /bungeealerts reload} — reload config.yml (permission: {@code bungeealerts.reload})</li>
+ * </ul>
+ */
+public final class CommandBAlerts implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) return false;
-        if (!player.hasPermission("bungeealerts.use")) return false;
+        // Reload subcommand
+        if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+            return handleReload(sender);
+        }
+
+        // Toggle alerts (player only)
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            return false;
+        }
+
+        if (!player.hasPermission("bungeealerts.use")) {
+            player.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            return false;
+        }
 
         UUID uuid = player.getUniqueId();
-        boolean current = BungeeAlerts.getStafferMap().getOrDefault(uuid, false);
+        Set<UUID> staffSet = BungeeAlerts.getStaffSet();
 
-        BungeeAlerts.getStafferMap().put(uuid, !current);
-        if (current) {
+        if (staffSet.remove(uuid)) {
             player.sendMessage(color("&cAlerts disabled."));
         } else {
+            staffSet.add(uuid);
             player.sendMessage(color("&aAlerts enabled."));
         }
 
+        return true;
+    }
+
+    private boolean handleReload(CommandSender sender) {
+        if (!sender.hasPermission("bungeealerts.reload")) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to reload the config.");
+            return false;
+        }
+
+        BungeeAlerts plugin = BungeeAlerts.getInstance();
+        plugin.reloadConfig();
+        plugin.getConfig().options().copyDefaults(true);
+        sender.sendMessage(color("&aBungeeAlerts configuration reloaded."));
         return true;
     }
 

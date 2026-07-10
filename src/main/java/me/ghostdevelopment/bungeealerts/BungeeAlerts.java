@@ -1,11 +1,5 @@
 package me.ghostdevelopment.bungeealerts;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import lombok.Getter;
 import me.ghostdevelopment.bungeealerts.commands.CommandACLogs;
 import me.ghostdevelopment.bungeealerts.commands.CommandBAlerts;
@@ -14,75 +8,153 @@ import me.ghostdevelopment.bungeealerts.events.*;
 import me.ghostdevelopment.bungeealerts.redis.RedisManager;
 import me.ghostdevelopment.bungeealerts.utils.DB;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BungeeAlerts extends JavaPlugin {
-    
-    
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+/**
+ * BungeeAlerts — Cross-server anti-cheat alert system.
+ * <p>
+ * Hooks into Vulcan, Matrix, GrimAC, and Karhu flag events,
+ * broadcasts alerts to staff via Redis pub/sub, and persists
+ * violation logs to MySQL / PostgreSQL / MongoDB / SQLite.
+ *
+ * <h3>Quick start</h3>
+ * <pre>{@code
+ *   # Build with AC JARs in lib/
+ *   mvn clean package
+ *
+ *   # Build without AC JARs (uses stubs)
+ *   mvn clean package -Pno-libs
+ * }</pre>
+ */
+public final class BungeeAlerts extends JavaPlugin {
+
+    // ── Static state ─────────────────────────────────────────
+
+    /**
+     * @return the singleton plugin instance
+     */
+    @Getter
     private static BungeeAlerts instance;
+    /**
+     * @return the Redis pub/sub manager, or null if not initialized
+     */
+    @Getter
     private static RedisManager redisManager;
+    /**
+     * @return the alert dispatch pipeline
+     */
+    @Getter
+    private static AlertDispatcher dispatcher;
 
-    private static final HashMap<UUID, Boolean> staffer = new HashMap<>();
+    /**
+     * Staff UUIDs that have alerts enabled.
+     * {@link ConcurrentHashMap#newKeySet()} gives O(1) add/remove/contains
+     * without streaming all online players on every alert.
+     * -- GETTER --
+     *
+     * @return the set of staff UUIDs with alerts toggled on
 
-    public static HashMap<UUID, Boolean> getStafferMap() {
-        return staffer;
-    }
+     */
+    @Getter
+    private static final Set<UUID> staffSet = ConcurrentHashMap.newKeySet();
 
+    // ── Public accessors ─────────────────────────────────────
+
+    /**
+     * Returns online players whose UUID is in the staff set.
+     * Called on every alert — keep it lean.
+     */
     public static Collection<Player> getStaffer() {
-        return Bukkit.getOnlinePlayers().stream()
-                .filter(p -> staffer.getOrDefault(p.getUniqueId(), false))
+        Collection<? extends Player> online = Bukkit.getOnlinePlayers();
+        if (online.isEmpty()) return Collections.emptyList();
+        return online.stream()
+                .filter(p -> staffSet.contains(p.getUniqueId()))
                 .collect(Collectors.toList());
     }
 
-    public static Object getInstance() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public static RedisManager getRedisManager() {
-        return redisManager;
-    }
+    // ── Lifecycle ────────────────────────────────────────────
 
     @Override
     public void onEnable() {
         instance = this;
+        Logger log = getLogger();
 
-        getConfig().options().copyDefaults(true);
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+
+        dispatcher = new AlertDispatcher(this);
 
         redisManager = new RedisManager(this);
-        redisManager.sendMessage("§aBungeeAlerts has been enabled on " + getConfig().getString("server_name") + "!");
+        redisManager.sendMessage("§aBungeeAlerts has been enabled on "
+                + getConfig().getString(Settings.CFG_SERVER_NAME, Settings.DEFAULT_SERVER_NAME) + "!");
 
         registerEvents();
         registerCommands();
 
         redisManager.startListening();
-        
-        if (getConfig().getBoolean("aclogs.enabled")) DB.init();
+
+        if (getConfig().getBoolean(Settings.CFG_ACLOGS_ENABLED, true)) {
+            DB.init();
+        }
+
+        log.info("BungeeAlerts v" + getDescription().getVersion() + " enabled.");
     }
 
-    void registerEvents() {
+    @Override
+    public void onDisable() {
+        if (redisManager != null) {
+            redisManager.shutdown();
+        }
+        DB.close();
+        staffSet.clear();
+        getLogger().info("BungeeAlerts disabled. Connections closed.");
+    }
+
+    // ── Registration ─────────────────────────────────────────
+
+    private void registerEvents() {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new onJoinEvent(), this);
         pm.registerEvents(new onVulcanFlagEvent(this), this);
         pm.registerEvents(new onMatrixFlagEvent(this), this);
         pm.registerEvents(new onGrimFlagEvent(this), this);
+
         try {
-            if( Bukkit.getPluginManager().getPlugin("KarhuAPI") == null
-                    || Bukkit.getPluginManager().getPlugin("KarhuAC") == null
-                    || Bukkit.getPluginManager().getPlugin("Karhu") == null
-            ) return;
+            if (Bukkit.getPluginManager().getPlugin("KarhuAPI") == null
+                    && Bukkit.getPluginManager().getPlugin("KarhuAC") == null
+                    && Bukkit.getPluginManager().getPlugin("Karhu") == null) {
+                getLogger().warning("Karhu not found — skipping Karhu listener registration.");
+                return;
+            }
             onKarhuFlagEvent.register(this);
-        }catch (Exception e) {
+        } catch (Exception e) {
             getLogger().warning("KarhuAPI not found, skipping Karhu flag event registration.");
         }
     }
 
-    @SuppressWarnings("all")
-    void registerCommands() {
-        getCommand("bungeealerts").setExecutor(new CommandBAlerts());
-        getCommand("aclogs").setExecutor(new CommandACLogs());
-        getCommand("testalert").setExecutor(new CommandTestalert());
+    private void registerCommands() {
+        registerCommand("bungeealerts", new CommandBAlerts());
+        registerCommand("aclogs", new CommandACLogs());
+        registerCommand("testalert", new CommandTestalert());
+    }
+
+    private void registerCommand(String name, CommandExecutor executor) {
+        var cmd = getCommand(name);
+        if (cmd != null) {
+            cmd.setExecutor(executor);
+        } else {
+            getLogger().warning("Command '" + name + "' not found in plugin.yml — skipping registration.");
+        }
     }
 }

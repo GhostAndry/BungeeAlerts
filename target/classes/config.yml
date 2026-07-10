@@ -69,6 +69,10 @@ redis:
     # Default Redis port (6379). Only change if your setup differs.
     port: 6379
 
+    # (Optional) Redis password for authentication.
+    # Leave empty or remove if no password is set on the Redis server.
+    password: ""
+
     # Pub/Sub channel used for sending and receiving alert messages.
     # Must be identical across all servers in the network.
     channel: "bungeealerts"
@@ -87,7 +91,8 @@ aclogs:
 
     # Template used when writing violation logs into the database.
     # Contains contextual information and mirrors real-time alert formatting.
-    message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8]"
+    # Use %count% to show aggregated flag count (e.g. "KillAura x5").
+    message: "&7(%time%) &d%player% &7> &d%check% &8(&d%vl%&8) &8[&d%server%&8] &7x%count%"
 
     # Hover-text shown when staff navigate logs interactively.
     hover_message: |

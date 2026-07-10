@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BungeeAlerts.iml" filepath="$PROJECT_DIR$/BungeeAlerts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/BungeeAlerts.iml" filepath="$PROJECT_DIR$/.idea/BungeeAlerts.iml" />
     </modules>
   </component>
 </project>

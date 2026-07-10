@@ -22,3 +22,7 @@ commands:
 permissions:
   bungeealerts.use:
     description: 'Permission to use /bungeealerts command'
+  bungeealerts.test:
+    description: 'Permission to use /testalert command'
+  bungeealerts.reload:
+    description: 'Permission to reload BungeeAlerts configuration'

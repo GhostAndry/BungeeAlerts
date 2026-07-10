@@ -17,22 +17,27 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <release>21</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.38</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -40,10 +45,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <!-- Evita di creare il file dependency-reduced-pom.xml che sporca la cartella -->
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            
-                            <!-- RILOCAZIONE: Sposta le librerie nel tuo namespace -->
+
                             <relocations>
                                 <relocation>
                                     <pattern>com.mongodb</pattern>
@@ -53,9 +56,20 @@
                                     <pattern>org.bson</pattern>
                                     <shadedPattern>me.ghostdevelopment.bungeealerts.libs.bson</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>com.zaxxer.hikari</pattern>
+                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.hikari</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.postgresql</pattern>
+                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.postgresql</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.sqlite</pattern>
+                                    <shadedPattern>me.ghostdevelopment.bungeealerts.libs.sqlite</shadedPattern>
+                                </relocation>
                             </relocations>
 
-                            <!-- FILTRI: Rimuove le firme digitali per evitare SecurityException -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -79,7 +93,6 @@
         </resources>
     </build>
 
-
     <repositories>
         <repository>
             <id>spigotmc-repo</id>
@@ -101,7 +114,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
+            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -109,11 +122,10 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
-        <!-- MongoDB Driver Sync -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>5.2.1</version> <!-- Puoi usare anche la 4.11.1 se usi Java 8 -->
+            <version>5.2.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -121,46 +133,97 @@
             <artifactId>jedis</artifactId>
             <version>4.3.1</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>ac.grim</groupId>
-            <artifactId>grimac</artifactId>
-            <version>latest</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/Grim.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>me.frep</groupId>
-            <artifactId>Vulcan</artifactId>
-            <version>latest</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/Vulcan.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>me.rerere</groupId>
-            <artifactId>Matrix</artifactId>
-            <version>latest</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/Matrix.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>me.liwk</groupId>
-            <artifactId>Karhu</artifactId>
-            <version>latest</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/KarhuAPI.jar</systemPath>
-        </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.3.0</version>
+        </dependency>
     </dependencies>
+
+    <!-- Profile: with-libs (active by default) — includes AC system JARs -->
+    <profiles>
+        <profile>
+            <id>with-libs</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>ac.grim</groupId>
+                    <artifactId>grimac</artifactId>
+                    <version>latest</version>
+                    <scope>system</scope>
+                    <systemPath>${project.basedir}/lib/Grim.jar</systemPath>
+                </dependency>
+                <dependency>
+                    <groupId>me.frep</groupId>
+                    <artifactId>Vulcan</artifactId>
+                    <version>latest</version>
+                    <scope>system</scope>
+                    <systemPath>${project.basedir}/lib/Vulcan.jar</systemPath>
+                </dependency>
+                <dependency>
+                    <groupId>me.rerere</groupId>
+                    <artifactId>Matrix</artifactId>
+                    <version>latest</version>
+                    <scope>system</scope>
+                    <systemPath>${project.basedir}/lib/Matrix.jar</systemPath>
+                </dependency>
+                <dependency>
+                    <groupId>me.liwk</groupId>
+                    <artifactId>Karhu</artifactId>
+                    <version>latest</version>
+                    <scope>system</scope>
+                    <systemPath>${project.basedir}/lib/KarhuAPI.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Profile: no-libs — build without AC JARs.
+             Uses stub classes in src/main/stubs/ to satisfy the compiler.
+             Usage: mvn clean package -Pno-libs -->
+        <profile>
+            <id>no-libs</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>add-stub-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/main/stubs</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
